@@ -1,6 +1,7 @@
 from django.shortcuts import render as django_render
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework import serializers
+from zen_queries.decorators import QueriesDisabledWarning
 from zen_queries import (
     fetch,
     queries_dangerously_enabled,
@@ -35,6 +36,12 @@ class ContextManagerTestCase(TestCase):
                     with self.assertRaises(QueriesDisabledError):
                         Widget.objects.count()
         Widget.objects.count()
+
+    @override_settings(ZEN_QUERIES_WARN=True)
+    def test_queries_disabled_warnings_on(self):
+        with queries_disabled():
+            with self.assertWarns(QueriesDisabledWarning):
+                Widget.objects.count()
 
     def test_queries_enabled(self):
         with queries_disabled():
